@@ -5,7 +5,9 @@ import pandas as pd
 from IPython.display import display
 
 ## Internal path for accessing data in netflix_titles_nov_2019
-ShowInfo = pd.read_csv(r"netflix_titles_nov_2019.csv")
+# files downloaded and stored in SE 512 folder of my computer.
+
+ShowInfo = pd.read_csv(r"C:\Users\court\Google Drive\SCSU\SE 512\Project\netflix_titles_nov_2019.csv")
 
 #Number of data rows total.
 n = ShowInfo.shape[0]
