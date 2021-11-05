@@ -8,7 +8,7 @@ pd.read_csv("netflix_titles_nov_2019.csv", encoding="utf-8")
 
 file = pd.read_csv("netflix_titles_nov_2019.csv") 
 
-file.columns = ['show_id','title','director','cast','country','date_added','release_year','rating,duration','listed_in','description','type']
+file.columns = ['show_id', 'title', 'director', 'cast', 'country', 'date_added', 'release_year', 'rating', 'duration', 'listed_in', 'description', 'type']
 file['description'] = file['description'].str.lower().str.split()  
 
 stop = stopwords.words('english')
