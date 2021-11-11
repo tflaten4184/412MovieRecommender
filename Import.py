@@ -1,3 +1,5 @@
+# Author: Bill
+
 import csv
 
 with open('netflix_titles_nov_2019.csv',encoding="utf8") as csv_file:
