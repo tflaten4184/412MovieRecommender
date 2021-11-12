@@ -22,6 +22,19 @@ with open(infileName, encoding='utf-8') as infile:
             line_count += 1
     print(f'Processed {line_count} lines.')
 
+def remove_punctuation(str):
+
+    charsToRemove = ".'?\":;-,–()"
+
+    str = row[10]
+    result = str
+    for char in charsToRemove:
+        result = result.lower().replace(char, "")
+    print("description: ", result)
+    line_count += 1
+
+    return result
+
 
 
 
