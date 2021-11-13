@@ -2,7 +2,7 @@
 
 import csv
 
-with open('netflix_titles_nov_2019.csv',encoding="utf8") as csv_file:
+with open('netflix_title.csv',encoding="utf8") as csv_file:
     csv_reader = csv.reader(csv_file)
 
     movies = {}
@@ -12,5 +12,3 @@ with open('netflix_titles_nov_2019.csv',encoding="utf8") as csv_file:
 
     #for each in movies:
         #print(movies)
-
-# Tyler's note: It seems the output of this is a dictionary (title: description)
