@@ -1,37 +1,22 @@
-#Project for SE412  Fall 2021
 # Author: Jacob
 # Purpose: Removes stopwords from a string
 
-import pandas as pd
+import csv
+import string
 from nltk.corpus import stopwords
 
-# The following block only executes if the script is run directly
-if __name__ == "__main__":
-    pd.read_csv("netflix_titles.csv", encoding="utf-8") 
-
-    file = pd.read_csv("netflix_titles_nov_2019.csv") 
-
-    file.columns = ['show_id', 'title', 'director', 'cast', 'country', 'date_added', 'release_year', 'rating', 'duration', 'listed_in', 'description', 'type']
-    file['description'] = file['description'].str.lower().str.split()  
+# Input: string
+# Output: return string (without punctuation)
+def remove_stopwords(str) -> str:
 
     stop = stopwords.words('english')
 
-    file['Title'] = file['Title'].apply(lambda x: [item for item in x if item not in stop])
-    file['Body'] = file['Body'].apply(lambda x: [item for item in x if item not in stop])
+    new_desc = [word for word in str.split() if word not in stop]
 
-    file.to_csv("netflix_titles_nov_2019_removed_stop.csv")
+    result = (" ").join(new_desc)
 
-##############################################################################
-# Use the original code (above) to implement the function and test case (below)
-##############################################################################
+    return result
 
-# Input: string
-# Output: return string (stopwords removed)
-def remove_stopwords(description: str) -> str:
-
-    print("Not implemented")
-
-    return description
 
 # Test case:
 # (Only executes if this script is run directly)
