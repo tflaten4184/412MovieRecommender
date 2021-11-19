@@ -2,17 +2,14 @@
 # Purpose: Contains a function that removes punctuation from a string
 
 import csv
+import re
 import string
 
 # Input: string
 # Output: return string (without punctuation)
-def remove_punctuation(str) -> str:
+def remove_symbols(str) -> str:
 
-    charsToRemove = ".'?\":;-,–()"
-
-    result = str
-    for char in charsToRemove:
-        result = result.lower().replace(char, "")
+    result = re.sub(r'[^A-Za-z0-9 ]+', '', str)
 
     return result
 
@@ -21,8 +18,8 @@ def remove_punctuation(str) -> str:
 # (Only executes if this script is run directly)
 if __name__ == "__main__":
 
-    test_string = "This, 'is'-a test string, containing punctuation."
+    test_string = "This, 'is' -a test string, containing punctuation."
 
-    test_result = remove_punctuation(test_string)
+    test_result = remove_symbols(test_string)
 
-    print("Puncuation removed:", test_result)
+    print("Punctuation removed:", test_result)
