@@ -2,6 +2,8 @@
 
 import pandas as pd
 import numpy as np
+import os
+import sys
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
@@ -16,7 +18,7 @@ def recommend(movie: str):
     
     infileName = "netflix-cleaned.csv"
     corpus = [] # list of all descriptions
-    with open(infileName, encoding="utf8") as inFile:
+    with open(os.path.join(sys.path[0], infileName), encoding="utf8") as inFile:
         df = pd.read_csv(inFile, encoding="utf8")
         # print("DF = ")
         # print(df)
@@ -25,7 +27,11 @@ def recommend(movie: str):
         # print("CORPUS = ")
         # print(corpus)
 
-    current_index = int(df.loc[df['title'] == movie]['index'])
+    try:
+        current_index = int(df.loc[df['title'] == movie]['index'])
+    except TypeError:
+        return None
+
     # print("Current Index: ", current_index)
 
     # tf = TfidfVectorizer(analyzer='word', ngram_range=(1,3), min_df = 0, stop_words = 'english') 
@@ -40,11 +46,11 @@ def recommend(movie: str):
     # print(df)
 
     # Might not need to save to file?
-    np.savetxt("output.txt", cs_matrix, fmt='%s') #output np array to file 
+    # np.savetxt("output.txt", cs_matrix, fmt='%s') #output np array to file
     #print(cs_matrix)
 
     # Get top 10 results, sorted by descending similarity
-    results = df.sort_values(by=['similarity'], ascending=False)[['title', 'similarity']].head(10)
+    results = df.sort_values(by=['similarity'], ascending=False)[['title', 'similarity']].head(11)
     results_tuples = list(results.to_records(index=False))
     # Returns a list of 10 tuples of the form: (title, similarity)
     return results_tuples

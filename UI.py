@@ -1,4 +1,5 @@
 from flask import Flask, url_for, request, redirect
+from cosine_proxy import recommend
 app = Flask(__name__)
 
 # Main page
@@ -15,15 +16,25 @@ def search():
 # Searches for similar titles and displays them
 @app.route("/similar_titles/<term>",)
 def similar_titles(term):
-    table = get_table("")  # Cosine search function goes here
-    return get_HTML(table, term)
+    return get_HTML(get_table(recommend(term)), term)
 
 # Returns string table of similar content with title and similarity
 def get_table(titles=None):
     if titles is not None:
         table = "<table>" \
-                "<tr><th>Title</th><th style='width: 15%;'>Similarity<br>Rating</th></tr>" \
-                "<tr><td>Title 1</td><td>100%</td></tr>"
+                "<tr><th>Title</th><th style='width: 15%;'>Similarity<br>Rating</th></tr>"
+
+        first = True
+        for index, tuple in enumerate(titles):
+            # Skip first title
+            if first is True:
+                first = False
+                continue
+            # Change similarity rating to percent and round
+            similarityRating = tuple[1] * 100
+            similarityRating = round(similarityRating, 2)
+            table += "<tr><td><a target='_blank' rel='noopener noreferrer' href='https://www.imdb.com/find?q=" + \
+                     str(tuple[0]) + "'>" + str(tuple[0]) + "</a></td><td>" + str(similarityRating) + "%</td></tr>"
 
         table += "</table>"
         return table
@@ -183,7 +194,7 @@ def get_HTML(table="", searchTerm=""):
           $("#searchTerm").autocomplete(
           {
             source: titles,
-            minLength: 1,
+            minLength: 2,
             scroll: true
           });
       }
