@@ -33,5 +33,5 @@ with open(infileName) as infile:
     trimmed_df["description"] = trimmed_df["description"].apply(apply_stemming)
     print(trimmed_df)
 
-    trimmed_df.to_csv("netflix-cleaned.csv")
+    trimmed_df.to_csv("netflix-cleaned.csv", index_label="index")
 
