@@ -21,9 +21,22 @@ def similar_titles(term):
 # Returns string table of similar content with title and similarity
 def get_table(titles=None):
     if titles is not None:
+        # If entered title isn't in dataset show error message
+        if titles == -1:
+            return """<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+                <script>swal({
+                    title: "Sorry, that title isn't in the dataset",
+                    icon: "error",
+                    buttons: {
+                        confirm : {text:'Okay',className:'sweet-button'}
+                    },
+                    }).then(() => {
+                    $("#searchTerm").val("");
+                });
+                </script>"""
+
         table = "<table>" \
                 "<tr><th>Title</th><th style='width: 15%;'>Similarity<br>Rating</th></tr>"
-
         first = True
         for index, tuple in enumerate(titles):
             # Skip first title
@@ -80,6 +93,16 @@ def get_HTML(table="", searchTerm=""):
       <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
     </html>
     <style>
+      .swal-modal 
+      {
+        font-family: Arial;
+      }
+        
+      .sweet-button
+      {
+        background-color: #DB202C;
+      }
+       
       .center
       {
         display: block;
@@ -175,6 +198,15 @@ def get_HTML(table="", searchTerm=""):
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script>
+      //Change color of button on hover for alert
+      $(".sweet-button").hover(function() 
+      {
+        $(".sweet-button").css('background', '#e86068');
+      }, function()
+      {
+        $(".sweet-button").css('background', '#DB202C');
+      });
+      
       //Ran when page is loaded
       $(document).ready(function()
       {

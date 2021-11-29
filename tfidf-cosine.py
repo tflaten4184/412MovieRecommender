@@ -30,7 +30,7 @@ def recommend(movie: str):
     try:
         current_index = int(df.loc[df['title'] == movie]['index'])
     except TypeError:
-        return None
+        return -1
 
     # print("Current Index: ", current_index)
 
