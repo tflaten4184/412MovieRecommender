@@ -8,8 +8,8 @@ from sklearn.metrics.pairwise import linear_kernel
 
 infileName = "netflix-cleaned.csv"
 corpus = []
-with open(infileName) as inFile:
-    df = pd.read_csv(inFile)
+with open(infileName, encoding="utf8") as inFile:
+    df = pd.read_csv(inFile, encoding="utf8")
     for index, row in df.iterrows(): #add description to corpus
         corpus.append(row['description'])
 
