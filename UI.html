@@ -1,0 +1,148 @@
+<html>
+  <head>
+    <title>Netflix Recommender</title>
+    <a href=""><img class="center" src="https://fontmeme.com/permalink/211101/9991a1e985e8c14d75b05f591703fdf9.png" alt="netflix-font" border="0"></a>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="search">
+        <input type="text" class="searchTerm" id="searchTerm" name="searchTerm" placeholder="Start typing...">
+        <button type="submit" class="searchButton" id="searchButton">
+          <img src="https://www.iconsdb.com/icons/preview/white/search-3-xxl.png" style="height: 30px; width: 30px;">
+        </button>
+      </div>
+    </div>
+    <div>
+      <table id="contentTable">
+        <tr><th>Title</th><th style="width: 15%;">Similarity<br>Rating</th></tr>
+        <!-- Similar conent for table goes here -->
+      </table>
+    </div>
+  </body>
+  <footer style="margin-top: 80px;">
+    <a target="_blank" rel="noopener noreferrer" href="https://fontmeme.com/netflix-font/">Title font provided by Font Meme</a>
+  </footer>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+</html>
+<style>
+  .center
+  {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+  }
+
+  .search
+  {
+  width: 100%;
+  position: relative;
+  display: flex;
+  }
+
+  .searchTerm
+  {
+    width: 100%;
+    border: 3px solid #DB202C;
+    border-right: none;
+    padding: 5px;
+    height: 36px;
+    border-radius: 5px 0 0 5px;
+    outline: none;
+    color: #000000;
+    font-size: 20px;
+    font-family: Arial;
+  }
+
+  .searchButton
+  {
+    width: 40px;
+    height: 36px;
+    border: 1px solid #DB202C;
+    background: #DB202C;
+    text-align: center;
+    color: #fff;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+  }
+
+  .wrap
+  {
+    width: 30%;
+    transform: translate(0%, 100%);
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  table
+  {
+    border-collapse: collapse;
+    font-family: Arial;
+    font-size: 12pt;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    margin-top: 100px;
+  }
+
+  table, th, td
+  {
+    border: 1px solid black;
+  }
+
+  th
+  {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: center;
+    background-color: #DB202C;
+    color: white;
+  }
+
+  .ui-autocomplete
+  {
+    position: absolute;
+    cursor: default;
+    z-index: 1001 !important;
+    font-family: Arial;
+  }
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script>
+  //Ran when page is loaded
+  $(document).ready(function()
+  {
+    autocompleteSetup();
+
+    //Hide empty table if search is empty
+    var search = $("#searchTerm").val();
+    if (search == "")
+    {
+      $("#contentTable").hide();
+    }
+  });
+
+  //Search for similar content when search button is clicked
+  $("#searchButton").click(function()
+  {
+    $("#contentTable").show();
+  });
+
+  //Show list of content while typing in search
+  function autocompleteSetup()
+  {
+    //Array of all titles
+    var titles = [
+      'Stranger Things'];
+
+      $('#searchTerm').autocomplete(
+      {
+        source: titles,
+        minLength: 1,
+        scroll: true
+      });
+    }
+</script>
