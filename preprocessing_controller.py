@@ -2,6 +2,7 @@
 # Purpose: Preprocessing the CSV and saving the result.
 
 import pandas as pd
+import numpy as np
 from remove_columns import trim_columns
 from remove_punctuation import remove_symbols
 from remove_stop_words import remove_stopwords
@@ -32,6 +33,10 @@ with open(infileName) as infile:
     # stemming conversion
     trimmed_df["description"] = trimmed_df["description"].apply(apply_stemming)
     print(trimmed_df)
+
+    # movie titles to array
+    titlesArr = trimmed_df["title"].to_numpy()
+    print(titlesArr)
 
     trimmed_df.to_csv("netflix-cleaned.csv")
 
