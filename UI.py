@@ -165,7 +165,7 @@ def get_HTML(table="", searchTerm=""):
         margin-top: 100px;
       }
     
-      table, th, td
+      th, td
       {
         border: 1px solid black;
       }
