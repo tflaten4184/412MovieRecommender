@@ -2,10 +2,12 @@ from flask import Flask, url_for, request, redirect
 from cosine_proxy import recommend
 app = Flask(__name__)
 
+
 # Main page
 @app.route("/")
 def home():
-    return get_HTML(get_table(), "")
+    return get_HTML()
+
 
 # Gets search term from front end
 @app.route("/search", methods=['POST'])
@@ -13,47 +15,55 @@ def search():
     term = request.form['searchTerm']
     return redirect(url_for('.similar_titles', term=term))
 
+
 # Searches for similar titles and displays them
 @app.route("/similar_titles/<term>",)
 def similar_titles(term):
-    return get_HTML(get_table(recommend(term)), term)
-
-# Returns string table of similar content with title and similarity
-def get_table(titles=None):
-    if titles is not None:
-        # If entered title isn't in dataset show error message
-        if titles == -1:
-            return """<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-                <script>swal({
-                    title: "Sorry, that title isn't in the dataset",
-                    icon: "error",
-                    buttons: {
-                        confirm : {text:'Okay',className:'sweet-button'}
-                    },
-                    }).then(() => {
-                    $("#searchTerm").val("");
-                });
-                </script>"""
-
-        table = "<table>" \
-                "<tr><th>Title</th><th style='width: 15%;'>Similarity<br>Rating</th></tr>"
-        first = True
-        for index, tuple in enumerate(titles):
-            # Skip first title
-            if first is True:
-                first = False
-                continue
-            # Change similarity rating to percent and round
-            similarityRating = tuple[1] * 100
-            similarityRating = round(similarityRating, 2)
-            table += "<tr><td><a target='_blank' rel='noopener noreferrer' href='https://www.imdb.com/find?q=" + \
-                     str(tuple[0]) + "'>" + str(tuple[0]) + "</a></td><td>" + str(similarityRating) + "%</td></tr>"
-
-        table += "</table>"
-        return table
+    titles1 = recommend(term)
+    # If entered title isn't in dataset show error message
+    if titles1 == -1:
+        errorMessage = """<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+                        <script>swal({
+                            title: "Sorry, that title isn't in the dataset",
+                            icon: "error",
+                            buttons: {
+                                confirm : {text:'Okay',className:'sweet-button'}
+                            },
+                            }).then(() => {
+                            $("#searchTerm").val("");
+                        });
+                        </script>"""
+        return get_HTML(errorMessage, term)
 
     else:
-        return ""
+        tables = """<table style="margin-left: auto;">"""
+        tables += get_table(titles1, "Cleaned Data")  # Clean dataset
+        tables += """</table>
+            <div style="width: 1%; min-width: 5px;"></div>
+            <table style="margin-right: auto;">"""
+        tables += get_table(recommend(term), "Dirty Data")  # Dirty dataset
+        tables += "</table>"
+        return get_HTML(tables, term)
+
+
+# Returns string table of similar content with title and similarity
+def get_table(titles, tableTitle):
+    table = "<tr><td colspan='2' style='text-align: center; border: none;'><b>" + tableTitle + "</b></td></tr>" \
+            "<tr><th>Title</th><th style='width: 15px'>Similarity<br>Rating</th></tr>"
+    first = True
+    for index, tuple in enumerate(titles):
+        # Skip first title
+        if first is True:
+            first = False
+            continue
+        # Change similarity rating to percent and round
+        similarityRating = tuple[1] * 100
+        similarityRating = round(similarityRating, 2)
+        table += "<tr><td><a target='_blank' rel='noopener noreferrer' href='https://www.imdb.com/find?q=" + \
+                 str(tuple[0]) + "'>" + str(tuple[0]) + "</a></td><td>" + str(similarityRating) + "%</td></tr>"
+
+    return table
+
 
 # Returns string of titles for search autocomplete
 def get_titles_for_autocomplete():
@@ -64,6 +74,7 @@ def get_titles_for_autocomplete():
     titles = '", "'.join(titles)
     titles = '"' + titles + '"'
     return titles
+
 
 # Returns HTML for page
 def get_HTML(table="", searchTerm=""):
@@ -83,8 +94,10 @@ def get_HTML(table="", searchTerm=""):
             </button>
           </form>
         </div>
-        <div>
-        """ + table + """
+        <div style="display: inline-block; display: flex;">
+            <div style="width: auto; min-width: 100px;"></div>
+            """ + table + """
+            <div style="width: auto; min-width: 100px;"></div>
         </div>
       </body>
       <footer style="margin-top: 80px;">
@@ -113,9 +126,9 @@ def get_HTML(table="", searchTerm=""):
     
       .search
       {
-      width: 100%;
-      position: relative;
-      display: flex;
+        width: 100%;
+        position: relative;
+        display: flex;
       }
     
       .searchTerm
@@ -146,7 +159,7 @@ def get_HTML(table="", searchTerm=""):
     
       .wrap
       {
-        width: 30%;
+        width: 40%;
         transform: translate(0%, 100%);
         display: block;
         margin-left: auto;
@@ -155,14 +168,14 @@ def get_HTML(table="", searchTerm=""):
     
       table
       {
+        min-width: 10px;
         border-collapse: collapse;
         font-family: Arial;
         font-size: 14pt;
         display: block;
-        margin-left: auto;
-        margin-right: auto;
-        width: 50%;
-        margin-top: 100px;
+        width: auto;
+        margin-top: 75px;
+        table-layout: auto;
       }
     
       th, td
