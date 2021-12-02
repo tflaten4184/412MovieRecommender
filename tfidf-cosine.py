@@ -14,18 +14,21 @@ from sklearn.metrics.pairwise import linear_kernel
 # Input: movie title as a string
 # Output: returns a list of tuples, of the form: (title, similarity)
 #    (sorted by descending similarity)
-def recommend(movie: str):
-    
-    infileName = "netflix-cleaned.csv"
-    corpus = [] # list of all descriptions
-    with open(os.path.join(sys.path[0], infileName), encoding="utf8") as inFile:
-        df = pd.read_csv(inFile, encoding="utf8")
-        # print("DF = ")
-        # print(df)
-        for index, row in df.iterrows(): #add description to corpus
-            corpus.append(row['description'])
-        # print("CORPUS = ")
-        # print(corpus)
+def recommend(movie: str, filename: str):
+    try:
+        infileName = filename
+        corpus = [] # list of all descriptions
+        with open(os.path.join(sys.path[0], infileName), encoding="utf8") as inFile:
+            df = pd.read_csv(inFile, encoding="utf8")
+            # print("DF = ")
+            # print(df)
+            for index, row in df.iterrows(): #add description to corpus
+                corpus.append(row['description'])
+            # print("CORPUS = ")
+            # print(corpus)
+    except:
+        print("\nCant find file! Try again!\n")
+        return None
 
     try:
         current_index = int(df.loc[df['title'] == movie]['index'])
@@ -58,7 +61,7 @@ def recommend(movie: str):
 if __name__ == "__main__":
 
     print("Testing Cases:")
-    print("Recommend for 'Kota Factory'")
-    print(recommend("Kota Factory"))
-    print("Recommend for 'Zubaan'")
-    print(recommend("Zubaan"))
+    print("Recommend for 'Kota Factory'", "netflix-cleaned.csv")
+    print(recommend("Kota Factory", "netflix-cleaned.csv"))
+    print("Recommend for 'Zubaan'", "netflix-cleaned.csv")
+    print(recommend("Zubaan", "sit.csv"))
