@@ -10,6 +10,16 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics.pairwise import linear_kernel
 
+# Returns list of all titles from dataset
+def get_all_titles():
+    titles = []  # list of all titles
+    with open(os.path.join(sys.path[0], "netflix-cleaned.csv"), encoding="utf8") as inFile:
+        df = pd.read_csv(inFile, encoding="utf8")
+        for index, row in df.iterrows():
+            titles.append(row['title'])
+
+    return titles
+
 # This function gets 10 recommendations.
 # Input: movie title as a string
 # Output: returns a list of tuples, of the form: (title, similarity)

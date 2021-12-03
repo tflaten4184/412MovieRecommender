@@ -1,7 +1,8 @@
-from flask import Flask, url_for, request, redirect
-from cosine_proxy import recommend
+from flask import Flask, url_for, request, redirect, jsonify
+from cosine_proxy import recommend, get_all_titles
 app = Flask(__name__)
-
+# Get array of all titles for autocomplete
+ALL_TITLES = get_all_titles()
 
 # Main page
 @app.route("/")
@@ -19,11 +20,12 @@ def search():
 # Searches for similar titles and displays them
 @app.route("/similar_titles/<term>",)
 def similar_titles(term):
-    titles1 = recommend(term)
+    titles1 = recommend(term, "netflix-cleaned.csv")
     # If entered title isn't in dataset show error message
     if titles1 == -1:
         errorMessage = """<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-                        <script>swal({
+                        <script>
+                        swal({
                             title: "Sorry, that title isn't in the dataset",
                             icon: "error",
                             buttons: {
@@ -41,7 +43,7 @@ def similar_titles(term):
         tables += """</table>
             <div style="width: 1%; min-width: 5px;"></div>
             <table style="margin-right: auto;">"""
-        tables += get_table(recommend(term), "Dirty Data")  # Dirty dataset
+        tables += get_table(recommend(term, "netflix-dirty.csv"), "Dirty Data")  # Dirty dataset
         tables += "</table>"
         return get_HTML(tables, term)
 
@@ -66,14 +68,17 @@ def get_table(titles, tableTitle):
 
 
 # Returns string of titles for search autocomplete
-def get_titles_for_autocomplete():
-    # List of titles
-    titles = ["Stranger Things", "Squid Game", "Grey's Anatomy"]
+@app.route('/autocomplete', methods=['POST'])
+def autocomplete():
+    term = request.json["term"]
+    titles = []
 
-    # Format titles
-    titles = '", "'.join(titles)
-    titles = '"' + titles + '"'
-    return titles
+    for title in ALL_TITLES:
+        if title.startswith(term, 0, len(term)-1):
+            titles.append(title)
+
+    print(titles)
+    return jsonify('$'.join(titles))
 
 
 # Returns HTML for page
@@ -210,6 +215,7 @@ def get_HTML(table="", searchTerm=""):
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script>
       //Change color of button on hover for alert
       $(".sweet-button").hover(function() 
@@ -223,29 +229,11 @@ def get_HTML(table="", searchTerm=""):
       //Ran when page is loaded
       $(document).ready(function()
       {
-        autocompleteSetup();
-        
         $("#searchTerm").val(""" + searchTerm + """);
       });
-      
-      //Show list of content while typing in search
-      function autocompleteSetup()
-      {
-        //Array of all titles goes here
-        var titles = [
-          """ + get_titles_for_autocomplete() + """
-        ];
-    
-          $("#searchTerm").autocomplete(
-          {
-            source: titles,
-            minLength: 2,
-            scroll: true
-          });
-      }
     </script>"""
 
 
 if __name__ == '__main__':
     # Start flask server
-    app.run()
+    app.run(debug=True)
