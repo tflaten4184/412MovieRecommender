@@ -3,6 +3,10 @@ from cosine_proxy import recommend, get_all_titles
 app = Flask(__name__)
 # Get array of all titles for autocomplete
 ALL_TITLES = get_all_titles()
+# Change the number of characters autocomplete needs
+# If your computer slows down when typing in search try a higher number
+AUTOCOMPLETE_MIN = 3
+
 
 # Main page
 @app.route("/")
@@ -70,14 +74,14 @@ def get_table(titles, tableTitle):
 # Returns string of titles for search autocomplete
 @app.route('/autocomplete', methods=['POST'])
 def autocomplete():
-    term = request.json["term"]
+    data = request.get_json()
+    term = data[0]['term']
     titles = []
-
+    # Loop through all titles and find matching
     for title in ALL_TITLES:
-        if title.startswith(term, 0, len(term)-1):
+        if term.lower() in title.lower():
             titles.append(title)
 
-    print(titles)
     return jsonify('$'.join(titles))
 
 
@@ -226,14 +230,51 @@ def get_HTML(table="", searchTerm=""):
         $(".sweet-button").css('background', '#DB202C');
       });
       
-      //Ran when page is loaded
+      //Set search term when page is loaded
       $(document).ready(function()
       {
         $("#searchTerm").val(""" + searchTerm + """);
+      });
+      
+      //Autocomplete for search
+      $("#searchTerm").keypress(function() 
+      {
+        var inTerm = $("#searchTerm").val();
+        
+        //Check autocomplete character limits
+        if (inTerm.length < """ + str(AUTOCOMPLETE_MIN + 2) + """ && inTerm.length >= """ + str(AUTOCOMPLETE_MIN) + """)
+        {
+            var server_data = [{"term": inTerm}];
+            
+            //Get array of matching titles from backend
+            jQuery.ajax(
+            {
+              type : 'POST',
+              url: '/autocomplete',
+              contentType: 'application/json',
+              dataType: 'json',
+              data: JSON.stringify(server_data),
+              success: function(titles)
+              {
+                titles = titles.split("$");
+                  
+                $("#searchTerm").autocomplete(
+                {
+                  source: titles,
+                  minLength: 1,
+                  scroll: true
+                });
+              },
+              error: function(e)
+              {
+                swal("Error", "Sorry, something happened. Please try again.", "error");
+              }
+            });
+        }
       });
     </script>"""
 
 
 if __name__ == '__main__':
     # Start flask server
-    app.run(debug=True)
+    app.run()
