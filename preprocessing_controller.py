@@ -23,7 +23,7 @@ with open(infileName) as infile:
     trimmed_df["description"] = trimmed_df["description"].apply(remove_symbols)
     print(trimmed_df)
 
-    trimmed_df.to_csv("netflix-dirty.csv")
+    trimmed_df.to_csv("netflix-dirty.csv", index_label="index")
 
     # remove stop words
     trimmed_df["description"] = trimmed_df["description"].apply(remove_stopwords)
