@@ -77,6 +77,52 @@ plt.fill_between(section,snd.pdf(section), color = 'r')
 plt.axvline(x=-1.64, color = 'black')
 plt.show()
 
+###################################################################################################################
+#Stemming...There is no difference in Number of Recommendations 
+#H0: there is no difference X = 0....Ha: There is a difference
+###################################################################################################################
+
+StemDif2 = Results['Difference']
+#  If there is no difference in Stemming and Not stemming, the searched shows would all match...This is the null hypothesis.
+# H0:  mu = 0
+# Ha:  mu != 0  with alpha-value 0.05.
+
+mu2 = np.mean(StemDif2)
+sigma2 = np.std(StemDif2)
+print('The mean difference between stemmed and unstemmed recommendations is', round(mu2, 4), ' and standard deviation is ', round(sigma2, 4), '.' )
+print()
+t_value2,p_value2=st.ttest_1samp(StemDif2,0)
+print('Test statistic is ', round(t_value2, 4))
+print()
+print('p-value for a two tailed test is', round(p_value2, 4))
+
+print('Boxplot of Differences in Recommendations of Stemmed vs. Unstemmed')
+sns.boxplot(y='Difference', data=LenDif)
+
+####################################################################################################################
+# Create a standard normal distribution with mean as 0 and standard deviation as 1
+####################################################################################################################
+
+muNorm = 0
+stdNorm = 1
+snd = st.norm(muNorm, stdNorm)
+
+x = np.linspace(-5, 5, 100)
+
+plt.figure(figsize=(7.5,7.5))
+plt.plot(x, snd.pdf(x))
+plt.xlim(-5, 5)
+plt.title('t-Distribution of the Differences in Recommeded Titles Between Stemmed and Unstemmed Descriptions', fontsize='15')
+plt.xlabel('Values t-Statistic with n - 1 df.', fontsize='15')
+plt.ylabel('Probability', fontsize='15')
+section1 = np.arange(-5, -t_value2, 0.01)
+plt.fill_between(section1,snd.pdf(section1), color = 'r')
+section2 = np.arange(t_value2, 5 , 0.01)
+plt.fill_between(section2,snd.pdf(section2), color = 'r')
+plt.axvline(x=-1.96, color = 'black')
+plt.axvline(x = 1.96, color = 'black')
+plt.show()
+
 ####################################################################################################################
 # t-test for short and long descriptions  H0:  Mu1 = Mu2, Ha: Mu1 != Mu2
 ####################################################################################################################
@@ -125,3 +171,41 @@ plt.axvline(x=-1.96, color = 'black')
 plt.axvline(x = 1.96, color = 'black')
 plt.show()
 
+
+####################################################################################################################
+#  Separate into long and short description and describe each data set.
+####################################################################################################################
+
+short = LenDif.query('short == "yes"')['Difference']
+long = LenDif.query('short == "no"')['Difference']
+LenDif.groupby('short').describe()
+rest_value1,resp_value1 = st.ttest_ind(short, long, equal_var=True)
+print('The test statistic is:  ', rest_value1)
+print('The probability of this result is:  ', resp_value1)
+
+print('Boxplots of Recommendation Differences Stemmed vs Unstemmed Descriptons')
+sns.boxplot(x='short', y='Difference', data=LenDif)
+
+####################################################################################################################
+# Create a standard normal distribution with mean as 0 and standard deviation as 1
+####################################################################################################################
+
+muNorm = 0
+stdNorm = 1
+snd = st.norm(muNorm, stdNorm)
+
+x = np.linspace(-5, 5, 100)
+
+plt.figure(figsize=(7.5,7.5))
+plt.plot(x, snd.pdf(x))
+plt.xlim(-5, 5)
+plt.title('t-Distribution of Recommendation Differences Stemmed vs Unstemmed Descriptons', fontsize='15')
+plt.xlabel('Values t-Statistic', fontsize='15')
+plt.ylabel('Probability', fontsize='15')
+section1 = np.arange(-5, -rest_value1, 0.01)
+plt.fill_between(section1,snd.pdf(section1), color = 'r')
+section2 = np.arange(rest_value1, 5 , 0.01)
+plt.fill_between(section2,snd.pdf(section2), color = 'r')
+plt.axvline(x=-1.96, color = 'black')
+plt.axvline(x = 1.96, color = 'black')
+plt.show()
