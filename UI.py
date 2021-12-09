@@ -1,10 +1,18 @@
-from flask import Flask, url_for, request, redirect
+from flask import Flask, url_for, request, redirect, jsonify
+from cosine_proxy import recommend, get_all_titles
 app = Flask(__name__)
+# Get array of all titles for autocomplete
+ALL_TITLES = get_all_titles()
+# Change the number of characters autocomplete needs
+# If your computer slows down when typing in search try a higher number
+AUTOCOMPLETE_MIN = 3
+
 
 # Main page
 @app.route("/")
 def home():
-    return get_HTML(get_table(), "")
+    return get_HTML()
+
 
 # Gets search term from front end
 @app.route("/search", methods=['POST'])
@@ -12,34 +20,70 @@ def search():
     term = request.form['searchTerm']
     return redirect(url_for('.similar_titles', term=term))
 
+
 # Searches for similar titles and displays them
 @app.route("/similar_titles/<term>",)
 def similar_titles(term):
-    table = get_table("")  # Cosine search function goes here
-    return get_HTML(table, term)
-
-# Returns string table of similar content with title and similarity
-def get_table(titles=None):
-    if titles is not None:
-        table = "<table>" \
-                "<tr><th>Title</th><th style='width: 15%;'>Similarity<br>Rating</th></tr>" \
-                "<tr><td>Title 1</td><td>100%</td></tr>"
-
-        table += "</table>"
-        return table
+    titles1 = recommend(term, "netflix-cleaned.csv")
+    # If entered title isn't in dataset show error message
+    if titles1 == -1:
+        errorMessage = """<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+                        <script>
+                        swal({
+                            title: "Sorry, that title isn't in the dataset",
+                            icon: "error",
+                            buttons: {
+                                confirm : {text:'Okay',className:'sweet-button'}
+                            },
+                            }).then(() => {
+                            $("#searchTerm").val("");
+                        });
+                        </script>"""
+        return get_HTML(errorMessage, term)
 
     else:
-        return ""
+        tables = """<table style="margin-left: auto;">"""
+        tables += get_table(titles1, "Cleaned Data")  # Clean dataset
+        tables += """</table>
+            <div style="width: 1%; min-width: 5px;"></div>
+            <table style="margin-right: auto;">"""
+        tables += get_table(recommend(term, "netflix-dirty.csv"), "Dirty Data")  # Dirty dataset
+        tables += "</table>"
+        return get_HTML(tables, term)
+
+
+# Returns string table of similar content with title and similarity
+def get_table(titles, tableTitle):
+    table = "<tr><td colspan='2' style='text-align: center; border: none;'><b>" + tableTitle + "</b></td></tr>" \
+            "<tr><th>Title</th><th style='width: 15px'>Similarity<br>Rating</th></tr>"
+    first = True
+    for index, tuple in enumerate(titles):
+        # Skip first title
+        if first is True:
+            first = False
+            continue
+        # Change similarity rating to percent and round
+        similarityRating = tuple[1] * 100
+        similarityRating = round(similarityRating, 2)
+        table += "<tr><td><a target='_blank' rel='noopener noreferrer' href='https://www.imdb.com/find?q=" + \
+                 str(tuple[0]) + "'>" + str(tuple[0]) + "</a></td><td>" + str(similarityRating) + "%</td></tr>"
+
+    return table
+
 
 # Returns string of titles for search autocomplete
-def get_titles_for_autocomplete():
-    # List of titles
-    titles = ["Stranger Things", "Squid Game", "Grey's Anatomy"]
+@app.route('/autocomplete', methods=['POST'])
+def autocomplete():
+    data = request.get_json()
+    term = data[0]['term']
+    titles = []
+    # Loop through all titles and find matching
+    for title in ALL_TITLES:
+        if term.lower() in title.lower():
+            titles.append(title)
 
-    # Format titles
-    titles = '", "'.join(titles)
-    titles = '"' + titles + '"'
-    return titles
+    return jsonify('$'.join(titles))
+
 
 # Returns HTML for page
 def get_HTML(table="", searchTerm=""):
@@ -59,8 +103,10 @@ def get_HTML(table="", searchTerm=""):
             </button>
           </form>
         </div>
-        <div>
-        """ + table + """
+        <div style="display: inline-block; display: flex;">
+            <div style="width: auto; min-width: 100px;"></div>
+            """ + table + """
+            <div style="width: auto; min-width: 100px;"></div>
         </div>
       </body>
       <footer style="margin-top: 80px;">
@@ -69,6 +115,16 @@ def get_HTML(table="", searchTerm=""):
       <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
     </html>
     <style>
+      .swal-modal 
+      {
+        font-family: Arial;
+      }
+        
+      .sweet-button
+      {
+        background-color: #DB202C;
+      }
+       
       .center
       {
         display: block;
@@ -79,9 +135,9 @@ def get_HTML(table="", searchTerm=""):
     
       .search
       {
-      width: 100%;
-      position: relative;
-      display: flex;
+        width: 100%;
+        position: relative;
+        display: flex;
       }
     
       .searchTerm
@@ -112,7 +168,7 @@ def get_HTML(table="", searchTerm=""):
     
       .wrap
       {
-        width: 30%;
+        width: 40%;
         transform: translate(0%, 100%);
         display: block;
         margin-left: auto;
@@ -121,17 +177,17 @@ def get_HTML(table="", searchTerm=""):
     
       table
       {
+        min-width: 10px;
         border-collapse: collapse;
         font-family: Arial;
         font-size: 14pt;
         display: block;
-        margin-left: auto;
-        margin-right: auto;
-        width: 50%;
-        margin-top: 100px;
+        width: auto;
+        margin-top: 75px;
+        table-layout: auto;
       }
     
-      table, th, td
+      th, td
       {
         border: 1px solid black;
       }
@@ -163,30 +219,59 @@ def get_HTML(table="", searchTerm=""):
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script>
-      //Ran when page is loaded
+      //Change color of button on hover for alert
+      $(".sweet-button").hover(function() 
+      {
+        $(".sweet-button").css('background', '#e86068');
+      }, function()
+      {
+        $(".sweet-button").css('background', '#DB202C');
+      });
+      
+      //Set search term when page is loaded
       $(document).ready(function()
       {
-        autocompleteSetup();
-        
         $("#searchTerm").val(""" + searchTerm + """);
       });
       
-      //Show list of content while typing in search
-      function autocompleteSetup()
+      //Autocomplete for search
+      $("#searchTerm").keypress(function() 
       {
-        //Array of all titles goes here
-        var titles = [
-          """ + get_titles_for_autocomplete() + """
-        ];
-    
-          $("#searchTerm").autocomplete(
-          {
-            source: titles,
-            minLength: 1,
-            scroll: true
-          });
-      }
+        var inTerm = $("#searchTerm").val();
+        
+        //Check autocomplete character limits
+        if (inTerm.length < """ + str(AUTOCOMPLETE_MIN + 2) + """ && inTerm.length >= """ + str(AUTOCOMPLETE_MIN) + """)
+        {
+            var server_data = [{"term": inTerm}];
+            
+            //Get array of matching titles from backend
+            jQuery.ajax(
+            {
+              type : 'POST',
+              url: '/autocomplete',
+              contentType: 'application/json',
+              dataType: 'json',
+              data: JSON.stringify(server_data),
+              success: function(titles)
+              {
+                titles = titles.split("$");
+                  
+                $("#searchTerm").autocomplete(
+                {
+                  source: titles,
+                  minLength: 1,
+                  scroll: true
+                });
+              },
+              error: function(e)
+              {
+                swal("Error", "Sorry, something happened. Please try again.", "error");
+              }
+            });
+        }
+      });
     </script>"""
 
 
